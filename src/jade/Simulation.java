@@ -32,6 +32,12 @@ public class Simulation extends Agent {
 		// Adds new agent to container
 		AgentController a = home.createNewAgent("HC",HostCache.class.getName(), new Object[0]);
 		a.start();
+		AgentController b = home.createNewAgent("SP1",SuperPeer.class.getName(), new Object[0]);
+		b.start();
+		AgentController c = home.createNewAgent("SP2",SuperPeer.class.getName(), new Object[0]);
+		c.start();
+		AgentController d = home.createNewAgent("SP3",SuperPeer.class.getName(), new Object[0]);
+		d.start();
 		//home.createNewAgent("2", "jade.HostCache", null);
 		} catch (jade.wrapper.StaleProxyException e) {
 		System.err.println("Error launching agent...");

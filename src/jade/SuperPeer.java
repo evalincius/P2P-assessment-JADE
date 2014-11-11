@@ -26,7 +26,6 @@ package jade;
 import java.util.ArrayList;
 import java.util.Random;
 
-
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 import jade.core.*;
@@ -54,40 +53,52 @@ public class SuperPeer extends Agent {
 	private ArrayList NPeerList = new ArrayList();
     private Random randomGenerator;
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
-
+	private boolean registered = false;
 		public WaitPingAndReplyBehaviour(Agent a) {
 			super(a);
+			try {
+				Thread.sleep(20000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		public void action() {
-			ACLMessage RegMsg = new ACLMessage(ACLMessage.INFORM);
+			ACLMessage RegMsg = new ACLMessage(ACLMessage.REQUEST);
 			RegMsg.setContent("register");
 			AID recei = new AID("HC", AID.ISLOCALNAME);
 			RegMsg.addReceiver(recei);
+			if(!registered){
 			myAgent.send(RegMsg);
+			registered = true;
+			}
+			
 			
 			ACLMessage  msg = myAgent.receive();
 			if(msg != null){
-				ACLMessage reply = msg.createReply();
+				//ACLMessage reply = msg.createReply();
 				if(msg.getPerformative()== ACLMessage.INFORM){
 					String content = msg.getContent();
-					if ((content != null) && (content.indexOf("confirm") != -1)){
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received REGISTER Request from "+msg.getSender().getLocalName());
+					if ((content != null) && (content.indexOf("comfirm") != -1)){
+						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
 						
 					}
 					else{
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
-						reply.setPerformative(ACLMessage.REFUSE);
-						reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
+						registered = false;
+						//myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
+						//reply.setPerformative(ACLMessage.REFUSE);
+						//reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
 					}
 
 				}
 				else {
-					myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
-					reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
-					reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
+					registered = false;
+					//myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
+					//reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
+					//reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
 				}
-				send(reply);
+				//send(reply);
 			}
 			else {
 				block();

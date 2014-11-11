@@ -26,7 +26,6 @@ package jade;
 import java.util.ArrayList;
 import java.util.Random;
 
-
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 import jade.core.*;
@@ -59,6 +58,8 @@ public class HostCache extends Agent {
 
 		public WaitPingAndReplyBehaviour(Agent a) {
 			super(a);
+			//For test purposes gives time to turn on sniffer
+			
 		}
 
 		public void action() {
@@ -75,7 +76,7 @@ public class HostCache extends Agent {
 					     //Object randomItem = SuperPeerList.get(index);
 						//System.out.println(peerList);
 						reply.setPerformative(ACLMessage.INFORM);
-						reply.setContent("confirm" +" "+ ID);
+						reply.setContent("comfirm");
 						ID++;
 					}
 					else{
