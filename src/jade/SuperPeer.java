@@ -47,13 +47,11 @@ import jade.util.Logger;
  * @author Tiziana Trucco - CSELT S.p.A.
  * @version  $Date: 2010-04-08 13:08:55 +0200 (gio, 08 apr 2010) $ $Revision: 6297 $  
  */
-public class HostCache extends Agent {
+public class SuperPeer extends Agent {
 
 	private Logger myLogger = Logger.getMyLogger(getClass().getName());
 	private ArrayList SuperPeerList = new ArrayList();
 	private ArrayList NPeerList = new ArrayList();
-	private int ID = 0;
-
     private Random randomGenerator;
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
 
@@ -62,21 +60,20 @@ public class HostCache extends Agent {
 		}
 
 		public void action() {
+			ACLMessage RegMsg = new ACLMessage(ACLMessage.INFORM);
+			RegMsg.setContent("register");
+			AID recei = new AID("HC", AID.ISLOCALNAME);
+			RegMsg.addReceiver(recei);
+			myAgent.send(RegMsg);
+			
 			ACLMessage  msg = myAgent.receive();
 			if(msg != null){
 				ACLMessage reply = msg.createReply();
-
-				if(msg.getPerformative()== ACLMessage.REQUEST){
+				if(msg.getPerformative()== ACLMessage.INFORM){
 					String content = msg.getContent();
-					if ((content != null) && (content.indexOf("register") != -1)){
+					if ((content != null) && (content.indexOf("confirm") != -1)){
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received REGISTER Request from "+msg.getSender().getLocalName());
-						SuperPeerList.add(msg.getSender().getLocalName() + ID);
-						 //int index = randomGenerator.nextInt(SuperPeerList.size());
-					     //Object randomItem = SuperPeerList.get(index);
-						//System.out.println(peerList);
-						reply.setPerformative(ACLMessage.INFORM);
-						reply.setContent("confirm" +" "+ ID);
-						ID++;
+						
 					}
 					else{
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());

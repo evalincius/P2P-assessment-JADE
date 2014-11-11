@@ -30,7 +30,7 @@ public class Simulation extends Agent {
 		//Creates new container
 		jade.wrapper.AgentContainer home = runtime.createAgentContainer(new ProfileImpl());
 		// Adds new agent to container
-		AgentController a = home.createNewAgent("a2",HostCache.class.getName(), new Object[0]);
+		AgentController a = home.createNewAgent("HC",HostCache.class.getName(), new Object[0]);
 		a.start();
 		//home.createNewAgent("2", "jade.HostCache", null);
 		} catch (jade.wrapper.StaleProxyException e) {
