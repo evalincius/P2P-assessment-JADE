@@ -51,12 +51,14 @@ public class SuperPeer extends Agent {
 	private Logger myLogger = Logger.getMyLogger(getClass().getName());
 	private ArrayList SuperPeerList = new ArrayList();
 	private ArrayList NPeerList = new ArrayList();
-    private Random randomGenerator;
+	Random r = new Random();
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
 	private boolean registered = false;
 		public WaitPingAndReplyBehaviour(Agent a) {
 			super(a);
+			//Gives delay for test purposes, time to open sniffer 
 			try {
+				//20s = 20000
 				Thread.sleep(20000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -65,15 +67,33 @@ public class SuperPeer extends Agent {
 		}
 
 		public void action() {
+			// gets argumets for test purposes
+			ArrayList<String> ListOfHC = new ArrayList<String>();
+			Object[] args = getArguments();
+			//gets bandwidth's value 
+			String a = args[0].toString();
+			double Bandwidth = Double.parseDouble(a);
+			//gets all host caches that are awailable
+			try{
+				for(int i =1; i<args.length; i++ ){
+					ListOfHC.add(args[i].toString());
+					//System.out.println(Bandwidth);
+				}
+			}catch (NullPointerException e) {
+				//myLogger.log(Logger.SEVERE, "erroras blet", e);
+			}
+			//randomly selects one host cache
+		    int rand = r.nextInt(ListOfHC.size());
+		    String randomHC = ListOfHC.get(rand);
+		    //creates register message and sends it to randomly selected host cache 
 			ACLMessage RegMsg = new ACLMessage(ACLMessage.REQUEST);
 			RegMsg.setContent("register");
-			AID recei = new AID("HC", AID.ISLOCALNAME);
+			AID recei = new AID(randomHC, AID.ISLOCALNAME);
 			RegMsg.addReceiver(recei);
 			if(!registered){
 			myAgent.send(RegMsg);
 			registered = true;
 			}
-			
 			
 			ACLMessage  msg = myAgent.receive();
 			if(msg != null){
@@ -82,7 +102,6 @@ public class SuperPeer extends Agent {
 					String content = msg.getContent();
 					if ((content != null) && (content.indexOf("comfirm") != -1)){
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
-						
 					}
 					else{
 						registered = false;

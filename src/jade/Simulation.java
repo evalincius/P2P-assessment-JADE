@@ -1,4 +1,11 @@
 package jade;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 import jade.core.*; 
@@ -29,16 +36,55 @@ public class Simulation extends Agent {
 		jade.core.Runtime runtime = jade.core.Runtime.instance();
 		//Creates new container
 		jade.wrapper.AgentContainer home = runtime.createAgentContainer(new ProfileImpl());
-		// Adds new agent to container
-		AgentController a = home.createNewAgent("HC",HostCache.class.getName(), new Object[0]);
-		a.start();
-		AgentController b = home.createNewAgent("SP1",SuperPeer.class.getName(), new Object[0]);
-		b.start();
-		AgentController c = home.createNewAgent("SP2",SuperPeer.class.getName(), new Object[0]);
-		c.start();
-		AgentController d = home.createNewAgent("SP3",SuperPeer.class.getName(), new Object[0]);
-		d.start();
-		//home.createNewAgent("2", "jade.HostCache", null);
+		//initialize buffered Reader
+		BufferedReader reader = null;
+		try {
+			File file = new File("/Users/ed/Peers.txt"); 
+			reader = new BufferedReader(new FileReader(file));
+			ArrayList<String> ListOfHC = new ArrayList<String>();
+
+		    String line;
+		    while ((line = reader.readLine()) != null) {
+		    	String Type = "peer",Name = "peer",BW = "peer";
+				ArrayList<String> Peer = new ArrayList<String>();
+		    	String str = line;
+				StringTokenizer st = new StringTokenizer(str);
+				while (st.hasMoreElements()) {
+					Peer.add(st.nextElement().toString().toLowerCase());
+				}
+					//gets peers type name and BW from the list
+					Type = Peer.get(0);
+					Name = Peer.get(1);
+					BW = Peer.get(2);
+					if(Type.equals("hc")){
+						// Adds new agent to container
+					    //System.out.println("creates HC");
+					    //System.out.println(Type+" "+Name+" "+BW);
+						AgentController a = home.createNewAgent(Name,HostCache.class.getName(), new Object[0]);
+						a.start();
+						ListOfHC.add(Name);
+					}else{
+						//System.out.println("creates Peer");
+					   // System.out.println(Type+" "+Name+" "+BW);
+					    Object[] args = new Object[10];
+						args[0]= BW;
+					    for(int i=0; i<ListOfHC.size(); i++){
+							args[i+1]= ListOfHC.get(i);
+					    }
+						AgentController b = home.createNewAgent(Name,SuperPeer.class.getName(), args);
+						b.start();
+					}
+		    }
+		} catch (IOException e) {
+		    e.printStackTrace();
+		} finally {
+		    try {
+		        reader.close();
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
+		}
+		
 		} catch (jade.wrapper.StaleProxyException e) {
 		System.err.println("Error launching agent...");
 		}
