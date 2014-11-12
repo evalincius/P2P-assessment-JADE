@@ -73,7 +73,7 @@ public class SuperPeer extends Agent {
 			//gets bandwidth's value 
 			String a = args[0].toString();
 			double Bandwidth = Double.parseDouble(a);
-			//gets all host caches that are awailable
+			//gets all host caches that are available
 			try{
 				for(int i =1; i<args.length; i++ ){
 					ListOfHC.add(args[i].toString());

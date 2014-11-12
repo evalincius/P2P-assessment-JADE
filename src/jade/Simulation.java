@@ -57,14 +57,15 @@ public class Simulation extends Agent {
 					Name = Peer.get(1);
 					BW = Peer.get(2);
 					if(Type.equals("hc")){
-						// Adds new agent to container
+						//Adds new agent to container
 					    //System.out.println("creates HC");
 					    //System.out.println(Type+" "+Name+" "+BW);
 						AgentController a = home.createNewAgent(Name,HostCache.class.getName(), new Object[0]);
 						a.start();
 						ListOfHC.add(Name);
 					}else{
-						//System.out.println("creates Peer");
+					if(Double.parseDouble(BW)>=2){
+						//System.out.println("creates SuperPeer");
 					   // System.out.println(Type+" "+Name+" "+BW);
 					    Object[] args = new Object[10];
 						args[0]= BW;
@@ -74,6 +75,18 @@ public class Simulation extends Agent {
 						AgentController b = home.createNewAgent(Name,SuperPeer.class.getName(), args);
 						b.start();
 					}
+					if(Double.parseDouble(BW)<2){
+						//System.out.println("creates NormalPeer");
+					   // System.out.println(Type+" "+Name+" "+BW);
+					    Object[] args = new Object[10];
+						args[0]= BW;
+					    for(int i=0; i<ListOfHC.size(); i++){
+							args[i+1]= ListOfHC.get(i);
+					    }
+						AgentController b = home.createNewAgent(Name,NormalPeer.class.getName(), args);
+						b.start();
+					}
+				}
 		    }
 		} catch (IOException e) {
 		    e.printStackTrace();

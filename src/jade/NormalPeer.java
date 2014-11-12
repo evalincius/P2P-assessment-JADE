@@ -25,7 +25,6 @@ package jade;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.StringTokenizer;
 
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
@@ -47,53 +46,78 @@ import jade.util.Logger;
  * @author Tiziana Trucco - CSELT S.p.A.
  * @version  $Date: 2010-04-08 13:08:55 +0200 (gio, 08 apr 2010) $ $Revision: 6297 $  
  */
-public class HostCache extends Agent {
+public class NormalPeer extends Agent {
 
 	private Logger myLogger = Logger.getMyLogger(getClass().getName());
 	private ArrayList SuperPeerList = new ArrayList();
 	private ArrayList NPeerList = new ArrayList();
-	private int ID = 0;
-
-    private Random randomGenerator;
+	Random r = new Random();
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
-
+	private boolean registered = false;
 		public WaitPingAndReplyBehaviour(Agent a) {
 			super(a);
-			//For test purposes gives time to turn on sniffer
-			
+			//Gives delay for test purposes, time to open sniffer 
+			try {
+				//20s = 20000
+				Thread.sleep(20000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+
 		public void action() {
+			// gets argumets for test purposes
+			ArrayList<String> ListOfHC = new ArrayList<String>();
+			Object[] args = getArguments();
+			//gets bandwidth's value 
+			String a = args[0].toString();
+			double Bandwidth = Double.parseDouble(a);
+			//gets all host caches that are awailable
+			try{
+				for(int i =1; i<args.length; i++ ){
+					ListOfHC.add(args[i].toString());
+					//System.out.println(Bandwidth);
+				}
+			}catch (NullPointerException e) {
+				//myLogger.log(Logger.SEVERE, "erroras blet", e);
+			}
+			//randomly selects one host cache
+		    int rand = r.nextInt(ListOfHC.size());
+		    String randomHC = ListOfHC.get(rand);
+		    //creates register message and sends it to randomly selected host cache 
+			ACLMessage RegMsg = new ACLMessage(ACLMessage.REQUEST);
+			RegMsg.setContent("register");
+			AID recei = new AID(randomHC, AID.ISLOCALNAME);
+			RegMsg.addReceiver(recei);
+			if(!registered){
+			myAgent.send(RegMsg);
+			registered = true;
+			}
+			
 			ACLMessage  msg = myAgent.receive();
 			if(msg != null){
-				ACLMessage reply = msg.createReply();
-
-				if(msg.getPerformative()== ACLMessage.REQUEST){
+				//ACLMessage reply = msg.createReply();
+				if(msg.getPerformative()== ACLMessage.INFORM){
 					String content = msg.getContent();
-					StringTokenizer st = new StringTokenizer(content);
-					ArrayList listContent = new ArrayList();
-					while (st.hasMoreElements()) {
-						listContent.add(st.nextElement().toString().toLowerCase());
-					}
-					if ((listContent.get(0) != null) && (((String) listContent.get(0)).indexOf("register") != -1)){
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received REGISTER Request from "+msg.getSender().getLocalName());
-						SuperPeerList.add(msg.getSender().getLocalName() + ID);
-						reply.setPerformative(ACLMessage.INFORM);
-						reply.setContent("comfirm");
-						ID++;
+					if ((content != null) && (content.indexOf("comfirm") != -1)){
+						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
 					}
 					else{
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
-						reply.setPerformative(ACLMessage.REFUSE);
-						reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
+						registered = false;
+						//myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
+						//reply.setPerformative(ACLMessage.REFUSE);
+						//reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
 					}
 
 				}
 				else {
-					myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
-					reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
-					reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
+					registered = false;
+					//myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
+					//reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
+					//reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
 				}
-				send(reply);
+				//send(reply);
 			}
 			else {
 				block();
