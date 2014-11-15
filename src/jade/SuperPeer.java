@@ -25,6 +25,7 @@ package jade;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.StringTokenizer;
 
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
@@ -51,6 +52,7 @@ public class SuperPeer extends Agent {
 	private Logger myLogger = Logger.getMyLogger(getClass().getName());
 	private ArrayList SuperPeerList = new ArrayList();
 	private ArrayList NPeerList = new ArrayList();
+	private String ID;
 	Random r = new Random();
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
 	private boolean registered = false;
@@ -66,13 +68,18 @@ public class SuperPeer extends Agent {
 			}
 		}
 
+		
 		public void action() {
+			registerWithHc();
+		}
+		
+		public void registerWithHc(){
 			// gets argumets for test purposes
 			ArrayList<String> ListOfHC = new ArrayList<String>();
 			Object[] args = getArguments();
 			//gets bandwidth's value 
-			String a = args[0].toString();
-			double Bandwidth = Double.parseDouble(a);
+			String BW = args[0].toString();
+			double Bandwidth = Double.parseDouble(BW);
 			//gets all host caches that are available
 			try{
 				for(int i =1; i<args.length; i++ ){
@@ -80,14 +87,14 @@ public class SuperPeer extends Agent {
 					//System.out.println(Bandwidth);
 				}
 			}catch (NullPointerException e) {
-				//myLogger.log(Logger.SEVERE, "erroras blet", e);
 			}
 			//randomly selects one host cache
 		    int rand = r.nextInt(ListOfHC.size());
 		    String randomHC = ListOfHC.get(rand);
 		    //creates register message and sends it to randomly selected host cache 
 			ACLMessage RegMsg = new ACLMessage(ACLMessage.REQUEST);
-			RegMsg.setContent("register");
+			//attaches BW to the message 
+			RegMsg.setContent("register"+ " " + BW);
 			AID recei = new AID(randomHC, AID.ISLOCALNAME);
 			RegMsg.addReceiver(recei);
 			if(!registered){
@@ -100,8 +107,17 @@ public class SuperPeer extends Agent {
 				//ACLMessage reply = msg.createReply();
 				if(msg.getPerformative()== ACLMessage.INFORM){
 					String content = msg.getContent();
-					if ((content != null) && (content.indexOf("comfirm") != -1)){
+					//splits received message to tokens to get message and ID strings
+					StringTokenizer st = new StringTokenizer(content);
+					ArrayList listContent = new ArrayList();
+					while (st.hasMoreElements()) {
+						listContent.add(st.nextElement().toString().toLowerCase());
+					}
+					if ((content != null) && (((String) listContent.get(0)).indexOf("comfirm") != -1)){
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
+						ID = (String) listContent.get(1);
+						System.out.println("zinute "+content);
+
 					}
 					else{
 						registered = false;
@@ -122,7 +138,7 @@ public class SuperPeer extends Agent {
 			else {
 				block();
 			}
-		}
+		}//end registerWithHC
 	} // END of inner class WaitPingAndReplyBehaviour
 
 
@@ -143,5 +159,6 @@ public class SuperPeer extends Agent {
 			myLogger.log(Logger.SEVERE, "Agent "+getLocalName()+" - Cannot register with DF", e);
 			doDelete();
 		}
+		
 	}
 }

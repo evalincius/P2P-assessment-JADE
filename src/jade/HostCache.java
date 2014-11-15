@@ -24,10 +24,13 @@ Boston, MA  02111-1307, USA.
 package jade;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 import jade.core.*;
 import jade.core.behaviours.*;
@@ -50,8 +53,10 @@ import jade.util.Logger;
 public class HostCache extends Agent {
 
 	private Logger myLogger = Logger.getMyLogger(getClass().getName());
-	private ArrayList SuperPeerList = new ArrayList();
-	private ArrayList NPeerList = new ArrayList();
+	//private ArrayList SuperPeerList = new ArrayList();
+	//private ArrayList NormalPeerList = new ArrayList();
+    Map SuperPeerList = new HashMap();
+    Map NormalPeerList = new HashMap();
 	private int ID = 0;
 
     private Random randomGenerator;
@@ -76,9 +81,37 @@ public class HostCache extends Agent {
 					}
 					if ((listContent.get(0) != null) && (((String) listContent.get(0)).indexOf("register") != -1)){
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received REGISTER Request from "+msg.getSender().getLocalName());
-						SuperPeerList.add(msg.getSender().getLocalName() + ID);
+						double Bandwidth = Double.parseDouble((String) listContent.get(1));
+						
+						// randomly selects Supernodes
+						Random random = new Random();
+						List<Integer> keys = new ArrayList<Integer>(SuperPeerList.keySet());
+						List<String> RandSPeersList = new ArrayList<String>();
+						//System.out.println("KEYS!!!!!"+keys);
+						int i = 3;
+						while(keys.size()!=0 && i>0){
+							//System.out.println("IESKOMAS ID!!!!!"+keys.get(random.nextInt(keys.size())));
+							 int randInt = random.nextInt(keys.size());
+							 RandSPeersList.add((String) SuperPeerList.get(keys.get(randInt)));
+							 System.out.println("keys before"+ " "+ keys);
+							 keys.remove(randInt);
+							 System.out.println("Keys after"+ " "+ keys);
+							 i--;
+						}
+						String SPeerList = "";
+						for(int j=0; j<RandSPeersList.size(); j++){
+							SPeerList = SPeerList + " " + RandSPeersList.get(j); 
+						} 
+						
+						if(Bandwidth>=2){
+							SuperPeerList.put( ID, msg.getSender().getLocalName());
+						}else{
+							NormalPeerList.put( ID, msg.getSender().getLocalName());
+						} 
+						
 						reply.setPerformative(ACLMessage.INFORM);
-						reply.setContent("comfirm");
+						reply.setContent("comfirm"+ " "+ ID +" " + SPeerList);
+						//add ID to list after selecting some ID to avoid selecting Peer I'm sending to
 						ID++;
 					}
 					else{
