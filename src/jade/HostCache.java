@@ -87,15 +87,11 @@ public class HostCache extends Agent {
 						Random random = new Random();
 						List<Integer> keys = new ArrayList<Integer>(SuperPeerList.keySet());
 						List<String> RandSPeersList = new ArrayList<String>();
-						//System.out.println("KEYS!!!!!"+keys);
 						int i = 3;
 						while(keys.size()!=0 && i>0){
-							//System.out.println("IESKOMAS ID!!!!!"+keys.get(random.nextInt(keys.size())));
 							 int randInt = random.nextInt(keys.size());
 							 RandSPeersList.add((String) SuperPeerList.get(keys.get(randInt)));
-							 System.out.println("keys before"+ " "+ keys);
 							 keys.remove(randInt);
-							 System.out.println("Keys after"+ " "+ keys);
 							 i--;
 						}
 						String SPeerList = "";
@@ -111,7 +107,6 @@ public class HostCache extends Agent {
 						
 						reply.setPerformative(ACLMessage.INFORM);
 						reply.setContent("comfirm"+ " "+ ID +" " + SPeerList);
-						//add ID to list after selecting some ID to avoid selecting Peer I'm sending to
 						ID++;
 					}
 					else{
@@ -131,7 +126,7 @@ public class HostCache extends Agent {
 			else {
 				block();
 			}
-		}
+		}//end of action
 	} // END of inner class WaitPingAndReplyBehaviour
 
 

@@ -42,7 +42,6 @@ public class Simulation extends Agent {
 			File file = new File("/Users/ed/Peers.txt"); 
 			reader = new BufferedReader(new FileReader(file));
 			ArrayList<String> ListOfHC = new ArrayList<String>();
-
 		    String line;
 		    while ((line = reader.readLine()) != null) {
 		    	String Type = "peer",Name = "peer",BW = "peer";
@@ -57,34 +56,34 @@ public class Simulation extends Agent {
 					Name = Peer.get(1);
 					BW = Peer.get(2);
 					if(Type.equals("hc")){
-						//Adds new agent to container
-					    //System.out.println("creates HC");
-					    //System.out.println(Type+" "+Name+" "+BW);
+						//creates HostCache with unique given name
 						AgentController a = home.createNewAgent(Name,HostCache.class.getName(), new Object[0]);
 						a.start();
 						ListOfHC.add(Name);
 					}else{
-					if(Double.parseDouble(BW)>=2){
-						//System.out.println("creates SuperPeer");
-					   // System.out.println(Type+" "+Name+" "+BW);
-					    Object[] args = new Object[10];
-						args[0]= BW;
-					    for(int i=0; i<ListOfHC.size(); i++){
-							args[i+1]= ListOfHC.get(i);
-					    }
-						AgentController b = home.createNewAgent(Name,SuperPeer.class.getName(), args);
-						b.start();
-					}
-					if(Double.parseDouble(BW)<2){
-						//System.out.println("creates NormalPeer");
-					   // System.out.println(Type+" "+Name+" "+BW);
-					    Object[] args = new Object[10];
-						args[0]= BW;
-					    for(int i=0; i<ListOfHC.size(); i++){
-							args[i+1]= ListOfHC.get(i);
-					    }
-						AgentController b = home.createNewAgent(Name,NormalPeer.class.getName(), args);
-						b.start();
+					if(Type.equals("peer")){
+						if(Double.parseDouble(BW)>=2){
+							//creates SuperPeer with unique given name
+							//sends list of HostCaches as an arguments
+						    Object[] args = new Object[10];
+							args[0]= BW;
+						    for(int i=0; i<ListOfHC.size(); i++){
+								args[i+1]= ListOfHC.get(i);
+						    }
+							AgentController b = home.createNewAgent(Name,SuperPeer.class.getName(), args);
+							b.start();
+						}
+						if(Double.parseDouble(BW)<2){
+							//creates NormalPeer with unique given name
+							//sends list of HostCaches as an arguments
+						    Object[] args = new Object[10];
+							args[0]= BW;
+						    for(int i=0; i<ListOfHC.size(); i++){
+								args[i+1]= ListOfHC.get(i);
+						    }
+							AgentController b = home.createNewAgent(Name,NormalPeer.class.getName(), args);
+							b.start();
+						}
 					}
 				}
 		    }

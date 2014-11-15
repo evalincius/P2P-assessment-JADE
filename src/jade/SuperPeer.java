@@ -51,11 +51,13 @@ public class SuperPeer extends Agent {
 
 	private Logger myLogger = Logger.getMyLogger(getClass().getName());
 	private ArrayList SuperPeerList = new ArrayList();
-	private ArrayList NPeerList = new ArrayList();
 	private String ID;
 	Random r = new Random();
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
 	private boolean registered = false;
+	private boolean msgReceived = false;
+	private boolean sent = false;//registered msg already sent
+
 		public WaitPingAndReplyBehaviour(Agent a) {
 			super(a);
 			//Gives delay for test purposes, time to open sniffer 
@@ -71,6 +73,9 @@ public class SuperPeer extends Agent {
 		
 		public void action() {
 			registerWithHc();
+			//connectWithServent(ACLMessage  msg);
+			
+			
 		}
 		
 		public void registerWithHc(){
@@ -98,14 +103,14 @@ public class SuperPeer extends Agent {
 			AID recei = new AID(randomHC, AID.ISLOCALNAME);
 			RegMsg.addReceiver(recei);
 			if(!registered){
-			myAgent.send(RegMsg);
-			registered = true;
+				myAgent.send(RegMsg);
+				registered = true;
 			}
 			
 			ACLMessage  msg = myAgent.receive();
 			if(msg != null){
 				//ACLMessage reply = msg.createReply();
-				if(msg.getPerformative()== ACLMessage.INFORM){
+				if(msg.getPerformative() == ACLMessage.INFORM){
 					String content = msg.getContent();
 					//splits received message to tokens to get message and ID strings
 					StringTokenizer st = new StringTokenizer(content);
@@ -116,11 +121,16 @@ public class SuperPeer extends Agent {
 					if ((content != null) && (((String) listContent.get(0)).indexOf("comfirm") != -1)){
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
 						ID = (String) listContent.get(1);
-						System.out.println("zinute "+content);
-
+						for(int i=2; i<listContent.size(); i++){
+							SuperPeerList.add((String) listContent.get(i));
+						}
+						System.out.println("SPLISTAS SuperPeer!!! "+ SuperPeerList);
+						msgReceived = true;
 					}
+					
 					else{
-						registered = false;
+						connectWithServent(msg);
+						//registered = false;
 						//myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
 						//reply.setPerformative(ACLMessage.REFUSE);
 						//reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
@@ -128,7 +138,8 @@ public class SuperPeer extends Agent {
 
 				}
 				else {
-					registered = false;
+					connectWithServent(msg);
+					//registered = false;
 					//myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
 					//reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
 					//reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
@@ -139,6 +150,45 @@ public class SuperPeer extends Agent {
 				block();
 			}
 		}//end registerWithHC
+		
+		public void connectWithServent(ACLMessage  msg2){
+			ACLMessage  msg = msg2;
+			if(msg != null){
+				ACLMessage reply = msg.createReply();
+
+				if(msg.getPerformative()== ACLMessage.REQUEST){
+					System.out.println("Got ping request");
+					String content = msg.getContent();
+					StringTokenizer st = new StringTokenizer(content);
+					ArrayList listContent = new ArrayList();
+					while (st.hasMoreElements()) {
+						listContent.add(st.nextElement().toString().toLowerCase());
+					}
+					if ((listContent.get(0) != null) && (((String) listContent.get(0)).indexOf("ping") != -1)){
+						System.out.println("gotPing");
+						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PING Request from "+msg.getSender().getLocalName());
+						reply.setPerformative(ACLMessage.INFORM);
+						reply.setContent("pong");
+					}
+					else{
+						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
+						reply.setPerformative(ACLMessage.REFUSE);
+						reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
+					}
+
+				}
+				else {
+					myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
+					reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
+					reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
+				}
+				send(reply);
+			}
+			else {
+				block();
+			}
+
+		}//End of connectWithServent
 	} // END of inner class WaitPingAndReplyBehaviour
 
 
