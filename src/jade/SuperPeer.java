@@ -65,7 +65,7 @@ public class SuperPeer extends Agent {
 			//Gives delay for test purposes, time to open sniffer 
 			try {
 				//20s = 20000
-				Thread.sleep(20000);
+				Thread.sleep(12000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -111,7 +111,6 @@ public class SuperPeer extends Agent {
 			RegMsg.addReceiver(recei);
 			if(!registered){
 				myAgent.send(RegMsg);
-				registered = true;
 			}
 			
 			ACLMessage  msg = msg2;
@@ -132,6 +131,8 @@ public class SuperPeer extends Agent {
 							SuperPeerList.add((String) listContent.get(i));
 						}
 						System.out.println("SPLISTAS SuperPeer!!! "+ SuperPeerList);
+						registered = true;
+
 						if(SuperPeerList.size()==0){
 							registered = false;
 						}					
@@ -156,7 +157,25 @@ public class SuperPeer extends Agent {
 						listContent.add(st.nextElement().toString().toLowerCase());
 					}
 					if ((listContent.get(0) != null) && (((String) listContent.get(0)).indexOf("ping") != -1)){
-						//System.out.println("gotPing");
+						//get last element
+						String lastPeer = (String) listContent.get(listContent.size()-1);
+						if(!lastPeer.equals("ping")){
+							//forward ping
+							for(int i=0;i<Neighbours.size(); i++){
+								ACLMessage PingMSG = new ACLMessage(ACLMessage.REQUEST);
+								PingMSG.setContent("ping "+ getLocalName());
+								String SP = (String) Neighbours.get(i);
+								AID neib = new AID(SP, AID.ISLOCALNAME);
+								PingMSG.addReceiver(neib);
+								myAgent.send(PingMSG);
+							}
+							if(Neighbours.size() <5){
+								myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PING Request from "+msg.getSender().getLocalName());
+								reply.setPerformative(ACLMessage.INFORM);
+								reply.setContent("pong");
+								send(reply);
+							}
+						}
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PING Request from "+msg.getSender().getLocalName());
 						reply.setPerformative(ACLMessage.INFORM);
 						reply.setContent("pong");
@@ -173,7 +192,7 @@ public class SuperPeer extends Agent {
 				for(int i=0;i<SuperPeerList.size(); i++){
 					MSGsent =true;
 					ACLMessage PingMSG = new ACLMessage(ACLMessage.REQUEST);
-					PingMSG.setContent("ping");
+					PingMSG.setContent("ping "+ getLocalName());
 					String SP = (String) SuperPeerList.get(i);
 					AID SuperPeer = new AID(SP, AID.ISLOCALNAME);
 					PingMSG.addReceiver(SuperPeer);

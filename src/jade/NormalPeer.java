@@ -62,7 +62,7 @@ public class NormalPeer extends Agent {
 			//Gives delay for test purposes, time to open sniffer 
 			try {
 				//20s = 20000
-				Thread.sleep(20000);
+				Thread.sleep(12000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -72,8 +72,10 @@ public class NormalPeer extends Agent {
 		public void action() {
 			ACLMessage  msg = myAgent.receive();
 			registerWithHC(msg);
+			if(registered){
 			connectWithSuperPeer();
 			getSuperPeersResponce(msg);
+			}
 
 		}
 		public void registerWithHC(ACLMessage  msg2){
@@ -101,8 +103,7 @@ public class NormalPeer extends Agent {
 						AID recei = new AID(randomHC, AID.ISLOCALNAME);
 						RegMsg.addReceiver(recei);
 						if(!registered){
-						myAgent.send(RegMsg);
-						registered = true;
+							myAgent.send(RegMsg);
 						}
 						
 						ACLMessage  msg = msg2;
@@ -123,6 +124,7 @@ public class NormalPeer extends Agent {
 										SuperPeerList.add((String) listContent.get(i));
 									}
 									System.out.println("SPLISTAS NormalPEER!!! "+ SuperPeerList);
+									registered = true;
 									if(SuperPeerList.size()==0){
 										registered = false;
 									}

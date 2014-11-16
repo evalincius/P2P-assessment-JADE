@@ -145,11 +145,13 @@ public class HostCache extends Agent {
 					reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
 				}
 				send(reply);
+				System.out.println("ISSIUSTA");
 			}
 			else {
 				block();
 			}
 		}//end of action
+
 	
 	} // END of inner class WaitPingAndReplyBehaviour
 
