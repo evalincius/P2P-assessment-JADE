@@ -134,27 +134,10 @@ public class SuperPeer extends Agent {
 						System.out.println("SPLISTAS SuperPeer!!! "+ SuperPeerList);
 						if(SuperPeerList.size()==0){
 							registered = false;
-						}					}
+						}					
 					
-					else{
-						//connectWithServent(msg);
-						//registered = false;
-						//myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
-						//reply.setPerformative(ACLMessage.REFUSE);
-						//reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
-					}
-
-				}
-				else {
-					connectWithServent(msg);
-					//registered = false;
-					//myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
-					//reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
-					//reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
-				}
-				//send(reply);
-			}
-			else {
+					
+					}}}else {
 				block();
 			}
 		}//end registerWithHC
@@ -179,20 +162,7 @@ public class SuperPeer extends Agent {
 						reply.setContent("pong");
 						send(reply);
 					}
-					else{
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
-						//reply.setPerformative(ACLMessage.REFUSE);
-						//reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
-					}
-
-				}
-				else {
-					myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
-					//reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
-					//reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
-				}
-			}
-			else {
+				}}else {
 				block();
 			}
 
@@ -235,19 +205,7 @@ public class SuperPeer extends Agent {
 						}
 
 					}
-					else{
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
-						//reply.setPerformative(ACLMessage.REFUSE);
-						//reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
-					}
-				}
-				else {
-					myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
-					//reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
-					//reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
-				}
-				//send(reply);
-			}
+				}}
 			else {
 				block();
 			}

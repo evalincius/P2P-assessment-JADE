@@ -126,18 +126,7 @@ public class NormalPeer extends Agent {
 									if(SuperPeerList.size()==0){
 										registered = false;
 									}
-								}
-								else{
-								}
-
-							}
-							else {
-								myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
-								//reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
-								//reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
-							}
-							//send(reply);
-						}
+								}}}
 						else {
 							block();
 						}
@@ -184,20 +173,7 @@ public class NormalPeer extends Agent {
 							System.out.println(getLocalName()+" CONNECTED TO "+SuperNode);
 						}
 
-					}
-					else{
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
-						//reply.setPerformative(ACLMessage.REFUSE);
-						//reply.setContent("( UnexpectedContent ("+content+"))"+"name->"+msg.getSender().getLocalName());
-					}
-				}
-				else {
-					myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected message ["+ACLMessage.getPerformative(msg.getPerformative())+"] received from "+msg.getSender().getLocalName());
-					//reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
-					//reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
-				}
-				//send(reply);
-			}
+					}}}
 			else {
 				block();
 			}
