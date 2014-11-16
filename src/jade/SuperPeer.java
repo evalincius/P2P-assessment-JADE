@@ -74,18 +74,19 @@ public class SuperPeer extends Agent {
 
 		
 		public void action() {
+			registerWithHc();
 			ACLMessage  msg = myAgent.receive();
-			registerWithHc(msg);
+			listenToHC(msg);
 			if(registered){
-			connectWithServent(msg);
-			connectWithOtherSuperPeers();
-			getSuperPeersResponce(msg);
+				connectWithServent(msg);
+			//connectWithOtherSuperPeers();
+			//getSuperPeersResponce(msg);
 			}
 			
 			
 		}
 		
-		public void registerWithHc(	ACLMessage  msg2){
+		public void registerWithHc(){
 			// gets argumets for test purposes
 			ArrayList<String> ListOfHC = new ArrayList<String>();
 			Object[] args = getArguments();
@@ -111,8 +112,10 @@ public class SuperPeer extends Agent {
 			RegMsg.addReceiver(recei);
 			if(!registered){
 				myAgent.send(RegMsg);
+				registered = true;
 			}
-			
+		}
+		public void listenToHC(ACLMessage  msg2){
 			ACLMessage  msg = msg2;
 			if(msg != null){
 				//ACLMessage reply = msg.createReply();
@@ -158,7 +161,7 @@ public class SuperPeer extends Agent {
 					}
 					if ((listContent.get(0) != null) && (((String) listContent.get(0)).indexOf("ping") != -1)){
 						//get last element
-						String lastPeer = (String) listContent.get(listContent.size()-1);
+						/**String lastPeer = (String) listContent.get(listContent.size()-1);
 						if(!lastPeer.equals("ping")){
 							//forward ping
 							for(int i=0;i<Neighbours.size(); i++){
@@ -175,7 +178,7 @@ public class SuperPeer extends Agent {
 								reply.setContent("pong");
 								send(reply);
 							}
-						}
+						}*/
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PING Request from "+msg.getSender().getLocalName());
 						reply.setPerformative(ACLMessage.INFORM);
 						reply.setContent("pong");

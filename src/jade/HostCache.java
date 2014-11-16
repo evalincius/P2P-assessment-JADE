@@ -58,8 +58,8 @@ public class HostCache extends Agent {
     Map SuperPeerList = new HashMap();
     Map NormalPeerList = new HashMap();
 	private int ID = 0;
-
     private Random randomGenerator;
+    
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
 		public WaitPingAndReplyBehaviour(Agent a) {
 			super(a);
@@ -84,17 +84,23 @@ public class HostCache extends Agent {
 						Random random = new Random();
 						List<Integer> keys = new ArrayList<Integer>(SuperPeerList.keySet());
 						List<String> RandSPeersList = new ArrayList<String>();
+						//randomly selects up to 3 Supernodes
 						int i = 3;
 						while(keys.size()!=0 && i>0){
 							 int randInt = random.nextInt(keys.size());
+							 /**System.out.println(randInt +" rand Int");
+							 System.out.println(keys.size() +" keysize");
+							 System.out.println(keys.get(randInt) +" get key from keylist");
+							 System.out.println(keys +" get key LIST");
+							 System.out.println(SuperPeerList +" get SuperPEPRrs LIST");
+							 System.out.println(" ____________________________________");*/
 							 String RandSP = (String) SuperPeerList.get(keys.get(randInt));
 							 //if returning SPeer, checks if its name is rot in random list
 							 if(!msg.getSender().getLocalName().equals(RandSP)){
 								 RandSPeersList.add(RandSP);
-								 keys.remove(randInt);
 								 i--;
 							 }
-							
+							 keys.remove(randInt);
 						}
 						String SPeerList = "";
 						for(int j=0; j<RandSPeersList.size(); j++){
@@ -102,19 +108,27 @@ public class HostCache extends Agent {
 						} 
 						//Checks returning Peers
 						if(SuperPeerList.containsValue(msg.getSender().getLocalName())){
+							System.out.println("MATO SP ");
+
 							List<Integer> keylist = new ArrayList<Integer>(SuperPeerList.keySet());
 							for(int a=0; a<keylist.size(); a++){
 								if(SuperPeerList.get(keylist.get(a)).equals(msg.getSender().getLocalName())){
 									ID = keylist.get(a);
+									System.out.println("TESTAS SP " +SuperPeerList);
+
 								}
 							}
 							
 						}
 						if(NormalPeerList.containsValue(msg.getSender().getLocalName())){
+							System.out.println("MATO NP ");
+
 							List<Integer> keylist = new ArrayList<Integer>(NormalPeerList.keySet());
 							for(int a=0; a<NormalPeerList.keySet().size(); a++){
 								if(NormalPeerList.get(keylist.get(a)).equals(msg.getSender().getLocalName())){
 									ID = keylist.get(a);
+									System.out.println("TEST NP "+SuperPeerList);
+
 								}
 							}
 							
@@ -145,7 +159,6 @@ public class HostCache extends Agent {
 					reply.setContent("( (Unexpected-act "+ACLMessage.getPerformative(msg.getPerformative())+") )"+"name->"+msg.getSender().getLocalName());   
 				}
 				send(reply);
-				System.out.println("ISSIUSTA");
 			}
 			else {
 				block();

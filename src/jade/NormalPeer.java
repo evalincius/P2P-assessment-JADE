@@ -70,15 +70,16 @@ public class NormalPeer extends Agent {
 		}
 
 		public void action() {
+			registerWithHC();
 			ACLMessage  msg = myAgent.receive();
-			registerWithHC(msg);
+			listenToHC(msg);
 			if(registered){
-			connectWithSuperPeer();
-			getSuperPeersResponce(msg);
+				connectWithSuperPeer();
+				getSuperPeersResponce(msg);
 			}
 
 		}
-		public void registerWithHC(ACLMessage  msg2){
+		public void registerWithHC(){
 			// gets argumets for test purposes
 						ArrayList<String> ListOfHC = new ArrayList<String>();
 						Object[] args = getArguments();
@@ -104,8 +105,10 @@ public class NormalPeer extends Agent {
 						RegMsg.addReceiver(recei);
 						if(!registered){
 							myAgent.send(RegMsg);
+							registered =true;
 						}
-						
+		}
+		public void listenToHC(ACLMessage  msg2){
 						ACLMessage  msg = msg2;
 						if(msg != null){
 							//ACLMessage reply = msg.createReply();
