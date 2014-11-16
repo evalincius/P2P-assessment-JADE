@@ -57,7 +57,7 @@ public class HostCache extends Agent {
 	//private ArrayList NormalPeerList = new ArrayList();
     Map SuperPeerList = new HashMap();
     Map NormalPeerList = new HashMap();
-	private int ID = 0;
+	private int ID = -1;
     private Random randomGenerator;
     
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
@@ -65,8 +65,9 @@ public class HostCache extends Agent {
 			super(a);
 		}
 		public void action() {
-			ACLMessage  msg = myAgent.receive();
+			ACLMessage  msg = myAgent.blockingReceive();
 			if(msg != null){
+				ID++;
 				ACLMessage reply = msg.createReply();
 
 				if(msg.getPerformative()== ACLMessage.REQUEST){
@@ -88,17 +89,24 @@ public class HostCache extends Agent {
 						int i = 3;
 						while(keys.size()!=0 && i>0){
 							 int randInt = random.nextInt(keys.size());
-							 /**System.out.println(randInt +" rand Int");
-							 System.out.println(keys.size() +" keysize");
-							 System.out.println(keys.get(randInt) +" get key from keylist");
-							 System.out.println(keys +" get key LIST");
-							 System.out.println(SuperPeerList +" get SuperPEPRrs LIST");
-							 System.out.println(" ____________________________________");*/
 							 String RandSP = (String) SuperPeerList.get(keys.get(randInt));
 							 //if returning SPeer, checks if its name is rot in random list
 							 if(!msg.getSender().getLocalName().equals(RandSP)){
-								 RandSPeersList.add(RandSP);
-								 i--;
+								 if(RandSPeersList.size()==0){
+									  RandSPeersList.add(RandSP);
+									  i--;
+								 }
+								 boolean equals = false;
+								 for(int a=0; a<RandSPeersList.size(); a++){
+									 if(RandSPeersList.get(a).equals(RandSP)){
+										 equals = true;
+									 }
+								 }
+								 if(!equals){
+									 RandSPeersList.add(RandSP);
+									  i--;
+									  equals = false;
+								 }
 							 }
 							 keys.remove(randInt);
 						}
@@ -107,35 +115,30 @@ public class HostCache extends Agent {
 							SPeerList = SPeerList + " " + RandSPeersList.get(j); 
 						} 
 						//Checks returning Peers
-						if(SuperPeerList.containsValue(msg.getSender().getLocalName())){
-							System.out.println("MATO SP ");
+						if(SuperPeerList.containsValue(msg.getSender().getLocalName())||NormalPeerList.containsValue(msg.getSender().getLocalName())){
+							if(SuperPeerList.containsValue(msg.getSender().getLocalName())){
+								List<Integer> keylist = new ArrayList<Integer>(SuperPeerList.keySet());
+								for(int a=0; a<keylist.size(); a++){
+									if(SuperPeerList.get(keylist.get(a)).equals(msg.getSender().getLocalName())){
+										ID = keylist.get(a);
+										System.out.println("griztantis  "+msg.getSender().getLocalName() +" "+ ID);
 
-							List<Integer> keylist = new ArrayList<Integer>(SuperPeerList.keySet());
-							for(int a=0; a<keylist.size(); a++){
-								if(SuperPeerList.get(keylist.get(a)).equals(msg.getSender().getLocalName())){
-									ID = keylist.get(a);
-									System.out.println("TESTAS SP " +SuperPeerList);
-
+	
+									}
 								}
+								
 							}
-							
-						}
-						if(NormalPeerList.containsValue(msg.getSender().getLocalName())){
-							System.out.println("MATO NP ");
-
-							List<Integer> keylist = new ArrayList<Integer>(NormalPeerList.keySet());
-							for(int a=0; a<NormalPeerList.keySet().size(); a++){
-								if(NormalPeerList.get(keylist.get(a)).equals(msg.getSender().getLocalName())){
-									ID = keylist.get(a);
-									System.out.println("TEST NP "+SuperPeerList);
-
+							if(NormalPeerList.containsValue(msg.getSender().getLocalName())){
+								List<Integer> keylist = new ArrayList<Integer>(NormalPeerList.keySet());
+								for(int a=0; a<NormalPeerList.keySet().size(); a++){
+									if(NormalPeerList.get(keylist.get(a)).equals(msg.getSender().getLocalName())){
+										ID = keylist.get(a);
+									}
 								}
-							}
-							
+							}	
 						}
 						else{
 							//increments ID
-							ID++;
 							//if new peer, checks BW and assigns new ID
 							if(Bandwidth>=2){
 								SuperPeerList.put( ID, msg.getSender().getLocalName());

@@ -79,8 +79,8 @@ public class SuperPeer extends Agent {
 			listenToHC(msg);
 			if(registered){
 				connectWithServent(msg);
-			//connectWithOtherSuperPeers();
-			//getSuperPeersResponce(msg);
+				connectWithOtherSuperPeers();
+				getSuperPeersResponce(msg);
 			}
 			
 			
@@ -133,6 +133,7 @@ public class SuperPeer extends Agent {
 						for(int i=2; i<listContent.size(); i++){
 							SuperPeerList.add((String) listContent.get(i));
 						}
+						System.out.println("Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
 						System.out.println("SPLISTAS SuperPeer!!! "+ SuperPeerList);
 						registered = true;
 
@@ -147,6 +148,7 @@ public class SuperPeer extends Agent {
 		}//end registerWithHC
 		
 		public void connectWithServent(ACLMessage  msg2){
+			boolean notForwarded = true;
 			ACLMessage  msg = msg2;
 			if(msg != null){
 				ACLMessage reply = msg.createReply();
@@ -159,50 +161,80 @@ public class SuperPeer extends Agent {
 					while (st.hasMoreElements()) {
 						listContent.add(st.nextElement().toString().toLowerCase());
 					}
-					if ((listContent.get(0) != null) && (((String) listContent.get(0)).indexOf("ping") != -1)){
+						if ((listContent.size() > 2) && (((String) listContent.get(0)).indexOf("ping") != -1)){
 						//get last element
-						/**String lastPeer = (String) listContent.get(listContent.size()-1);
-						if(!lastPeer.equals("ping")){
-							//forward ping
-							for(int i=0;i<Neighbours.size(); i++){
-								ACLMessage PingMSG = new ACLMessage(ACLMessage.REQUEST);
-								PingMSG.setContent("ping "+ getLocalName());
-								String SP = (String) Neighbours.get(i);
-								AID neib = new AID(SP, AID.ISLOCALNAME);
-								PingMSG.addReceiver(neib);
-								myAgent.send(PingMSG);
+							String lastPeer = (String) listContent.get(listContent.size()-1);
+							int HOPS = Integer.parseInt((String) listContent.get(1));
+							//FORWARD ping
+							if(HOPS>0){
+								HOPS--;
+								for(int i=0;i<Neighbours.size(); i++){
+									//is neighbor is not a sender do
+									//System.out.println("----------begining-------");
+
+									//System.out.println(Neighbours.get(i) +" equals to "+msg.getSender().getLocalName());
+									if(!Neighbours.get(i).equals(msg.getSender().getLocalName())){
+										//System.out.println(Neighbours.get(i) +" equals to "+msg.getSender().getLocalName());
+										
+										//System.out.println("-------end----------");
+
+										ACLMessage PingMSG = new ACLMessage(ACLMessage.REQUEST);
+										//HOPS needs to be added
+										String prewPeers = "";
+										for(int a=2; a< listContent.size(); a++){
+											//checks if I forwarded that message already
+											if(!listContent.get(a).equals(getLocalName())){
+												prewPeers= prewPeers + " "+ listContent.get(a);
+											}else{
+												notForwarded = false;
+											}
+										}
+										PingMSG.setContent("ping"+" "+HOPS+" "+ prewPeers+" "+ getLocalName());
+										String SP = (String) Neighbours.get(i);
+										AID neib = new AID(SP, AID.ISLOCALNAME);
+										PingMSG.addReceiver(neib);
+										if(notForwarded){
+											myAgent.send(PingMSG);
+										}
+									}
+								}
+								if(Neighbours.size() <2){
+									myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PING Request from "+msg.getSender().getLocalName());
+									reply.setPerformative(ACLMessage.INFORM);
+									reply.setContent("pong"+" "+ getLocalName());
+									send(reply);
+									Neighbours.add(lastPeer);
+									System.out.println(getLocalName()+" NEIGHBOUR WITH "+Neighbours + " after forwarding");
+								}
 							}
-							if(Neighbours.size() <5){
+						}else{
+							if ((listContent.get(0) != null) && (((String) listContent.get(0)).indexOf("ping") != -1)){
 								myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PING Request from "+msg.getSender().getLocalName());
 								reply.setPerformative(ACLMessage.INFORM);
 								reply.setContent("pong");
 								send(reply);
 							}
-						}*/
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PING Request from "+msg.getSender().getLocalName());
-						reply.setPerformative(ACLMessage.INFORM);
-						reply.setContent("pong");
-						send(reply);
-					}
-				}}else {
+						}
+				}
+				}else {
 				block();
 			}
 
 		}//End of connectWithServent
 		public void connectWithOtherSuperPeers(){
 			//if did not send yet do
+			String HOPS = "3";
 			if(!MSGsent){
 				for(int i=0;i<SuperPeerList.size(); i++){
-					MSGsent =true;
 					ACLMessage PingMSG = new ACLMessage(ACLMessage.REQUEST);
-					PingMSG.setContent("ping "+ getLocalName());
+					PingMSG.setContent("ping "+ HOPS+ " "+getLocalName());
 					String SP = (String) SuperPeerList.get(i);
 					AID SuperPeer = new AID(SP, AID.ISLOCALNAME);
 					PingMSG.addReceiver(SuperPeer);
-					if(Neighbours.size()<5){
+					if(Neighbours.size()<2){
 						myAgent.send(PingMSG);
-					}
-					
+						MSGsent = true;
+					}	
 				}
 			}
 		}//end of connectWithSuperPeer
@@ -220,12 +252,14 @@ public class SuperPeer extends Agent {
 						listContent.add(st.nextElement().toString().toLowerCase());
 					}
 					if ((content != null) && (((String) listContent.get(0)).indexOf("pong") != -1)){
-						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PONG from "+msg.getSender().getLocalName());
-						if(Neighbours.size()<5){
-							Neighbours.add(msg.getSender().getLocalName());
-							System.out.println(getLocalName()+" NEIGHBOUR WITH "+msg.getSender().getLocalName());
-						}
-
+						if(listContent.size()>1){
+							String PeerAnswered = (String) listContent.get(1);
+							myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PONG from "+msg.getSender().getLocalName());
+							if(Neighbours.size()<2){
+								Neighbours.add(PeerAnswered);
+								System.out.println(getLocalName()+" NEIGHBOUR WITH "+Neighbours);
+							}
+					}
 					}
 				}}
 			else {
