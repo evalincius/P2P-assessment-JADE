@@ -56,6 +56,7 @@ public class NormalPeer extends Agent {
 	Random r = new Random();
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
 	private boolean registered = false;
+	private boolean MSGsent = false;
 		public WaitPingAndReplyBehaviour(Agent a) {
 			super(a);
 			//Gives delay for test purposes, time to open sniffer 
@@ -69,10 +70,13 @@ public class NormalPeer extends Agent {
 		}
 
 		public void action() {
-			registerWithHC();
+			ACLMessage  msg = myAgent.receive();
+			registerWithHC(msg);
 			connectWithSuperPeer();
+			getSuperPeersResponce(msg);
+
 		}
-		public void registerWithHC(){
+		public void registerWithHC(ACLMessage  msg2){
 			// gets argumets for test purposes
 						ArrayList<String> ListOfHC = new ArrayList<String>();
 						Object[] args = getArguments();
@@ -101,7 +105,7 @@ public class NormalPeer extends Agent {
 						registered = true;
 						}
 						
-						ACLMessage  msg = myAgent.receive();
+						ACLMessage  msg = msg2;
 						if(msg != null){
 							//ACLMessage reply = msg.createReply();
 							if(msg.getPerformative()== ACLMessage.INFORM){
@@ -124,7 +128,6 @@ public class NormalPeer extends Agent {
 									}
 								}
 								else{
-									getSuperPeersResponce(msg);
 								}
 
 							}
@@ -144,18 +147,21 @@ public class NormalPeer extends Agent {
 		 * Method to connect with Super Peer
 		 */
 		public void connectWithSuperPeer(){
-			for(int i=0;i<SuperPeerList.size(); i++){
-				ACLMessage PingMSG = new ACLMessage(ACLMessage.REQUEST);
-				PingMSG.setContent("ping");
-				String SP = (String) SuperPeerList.get(i);
-				AID SuperPeer = new AID(SP, AID.ISLOCALNAME);
-				PingMSG.addReceiver(SuperPeer);
-				if(SuperNode.equals(""))
-				myAgent.send(PingMSG);
+			//if did not send yet do
+			if(!MSGsent){
+				for(int i=0;i<SuperPeerList.size(); i++){
+					MSGsent =true;
+					ACLMessage PingMSG = new ACLMessage(ACLMessage.REQUEST);
+					PingMSG.setContent("ping");
+					String SP = (String) SuperPeerList.get(i);
+					AID SuperPeer = new AID(SP, AID.ISLOCALNAME);
+					PingMSG.addReceiver(SuperPeer);
+					//if not connected to SuperNode yet
+					if(SuperNode.equals("")){
+						myAgent.send(PingMSG);
+					}
+				}
 			}
-			
-			
-
 		}//end of connectWithSuperPeer
 		
 		public void getSuperPeersResponce(ACLMessage  msg2){
@@ -173,7 +179,11 @@ public class NormalPeer extends Agent {
 					}
 					if ((content != null) && (((String) listContent.get(0)).indexOf("pong") != -1)){
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PONG from "+msg.getSender().getLocalName());
-						SuperNode = msg.getSender().getLocalName();
+						if(SuperNode.equals("")){
+							SuperNode = msg.getSender().getLocalName();
+							System.out.println(getLocalName()+" CONNECTED TO "+SuperNode);
+						}
+
 					}
 					else{
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());

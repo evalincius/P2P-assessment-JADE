@@ -1,1 +1,1 @@
-http://oa-edu-169-204.wireless.abdn.ac.uk:7778/acc
+http://edgarass-mbp:7778/acc

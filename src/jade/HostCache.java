@@ -61,11 +61,8 @@ public class HostCache extends Agent {
 
     private Random randomGenerator;
 	private class WaitPingAndReplyBehaviour extends CyclicBehaviour {
-
 		public WaitPingAndReplyBehaviour(Agent a) {
 			super(a);
-			//For test purposes gives time to turn on sniffer
-			
 		}
 		public void action() {
 			ACLMessage  msg = myAgent.receive();
@@ -90,24 +87,50 @@ public class HostCache extends Agent {
 						int i = 3;
 						while(keys.size()!=0 && i>0){
 							 int randInt = random.nextInt(keys.size());
-							 RandSPeersList.add((String) SuperPeerList.get(keys.get(randInt)));
-							 keys.remove(randInt);
-							 i--;
+							 String RandSP = (String) SuperPeerList.get(keys.get(randInt));
+							 //if returning SPeer, checks if its name is rot in random list
+							 if(!msg.getSender().getLocalName().equals(RandSP)){
+								 RandSPeersList.add(RandSP);
+								 keys.remove(randInt);
+								 i--;
+							 }
+							
 						}
 						String SPeerList = "";
 						for(int j=0; j<RandSPeersList.size(); j++){
 							SPeerList = SPeerList + " " + RandSPeersList.get(j); 
 						} 
-						
-						if(Bandwidth>=2){
-							SuperPeerList.put( ID, msg.getSender().getLocalName());
-						}else{
-							NormalPeerList.put( ID, msg.getSender().getLocalName());
-						} 
-						
+						//Checks returning Peers
+						if(SuperPeerList.containsValue(msg.getSender().getLocalName())){
+							List<Integer> keylist = new ArrayList<Integer>(SuperPeerList.keySet());
+							for(int a=0; a<keylist.size(); a++){
+								if(SuperPeerList.get(keylist.get(a)).equals(msg.getSender().getLocalName())){
+									ID = keylist.get(a);
+								}
+							}
+							
+						}
+						if(NormalPeerList.containsValue(msg.getSender().getLocalName())){
+							List<Integer> keylist = new ArrayList<Integer>(NormalPeerList.keySet());
+							for(int a=0; a<NormalPeerList.keySet().size(); a++){
+								if(NormalPeerList.get(keylist.get(a)).equals(msg.getSender().getLocalName())){
+									ID = keylist.get(a);
+								}
+							}
+							
+						}
+						else{
+							//increments ID
+							ID++;
+							//if new peer, checks BW and assigns new ID
+							if(Bandwidth>=2){
+								SuperPeerList.put( ID, msg.getSender().getLocalName());
+							}else{
+								NormalPeerList.put( ID, msg.getSender().getLocalName());
+							} 
+						}
 						reply.setPerformative(ACLMessage.INFORM);
 						reply.setContent("comfirm"+ " "+ ID +" " + SPeerList);
-						ID++;
 					}
 					else{
 						myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Unexpected request ["+content+"] received from "+msg.getSender().getLocalName());
@@ -127,6 +150,7 @@ public class HostCache extends Agent {
 				block();
 			}
 		}//end of action
+	
 	} // END of inner class WaitPingAndReplyBehaviour
 
 
