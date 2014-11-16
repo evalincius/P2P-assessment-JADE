@@ -42,13 +42,14 @@ import jade.domain.FIPAException;
 import jade.util.Logger;
 
 /**
- * This agent implements a simple Ping Agent that registers itself with the DF and 
- * then waits for ACLMessages.
- * If  a REQUEST message is received containing the string "ping" within the content 
- * then it replies with an INFORM message whose content will be the string "pong". 
+ * This agent implements a simple Agent that registers itself with the DF and 
+ * then waits for ACLMessages.It also registers itself to HC and sends "ping"
+ * messages to other SupperPeers or NormalPeers to get some neighbors or servents.
+ * Also listen to other SuperPeers to forward "ping" REQUEST messages and requests
+ * with "pong" INFORM messages.
  * 
- * @author Tiziana Trucco - CSELT S.p.A.
- * @version  $Date: 2010-04-08 13:08:55 +0200 (gio, 08 apr 2010) $ $Revision: 6297 $  
+ * @author Edgaras Valincius
+ * @references Tiziana Trucco - CSELT S.p.A.(used the ping message example)  
  */
 public class SuperPeer extends Agent {
 
@@ -98,7 +99,6 @@ public class SuperPeer extends Agent {
 			try{
 				for(int i =1; i<args.length; i++ ){
 					ListOfHC.add(args[i].toString());
-					//System.out.println(Bandwidth);
 				}
 			}catch (NullPointerException e) {
 			}
@@ -117,11 +117,9 @@ public class SuperPeer extends Agent {
 				timer.schedule(new TimerTask() {
 				   public void run() {
 					   if(Neighbours.size()==0){
-						   System.out.println("repeat");
 						   registered = false;
 						   MSGsent=false;
-							myAgent.send(RegMsg);
-
+						   myAgent.send(RegMsg);
 					   	}
 					   }
 
@@ -133,7 +131,6 @@ public class SuperPeer extends Agent {
 		public void listenToHC(ACLMessage  msg2){
 			ACLMessage  msg = msg2;
 			if(msg != null){
-				//ACLMessage reply = msg.createReply();
 				if(msg.getPerformative() == ACLMessage.INFORM){
 					String content = msg.getContent();
 					//splits received message to tokens to get message and ID strings
@@ -148,16 +145,14 @@ public class SuperPeer extends Agent {
 						for(int i=2; i<listContent.size(); i++){
 							SuperPeerList.add((String) listContent.get(i));
 						}
-						//System.out.println("Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
-						//System.out.println("SPLISTAS SuperPeer!!! "+ SuperPeerList);
 						registered = true;
 
 						if(SuperPeerList.size()==0){
 							registered = false;
 						}					
-					
-					
-					}}}else {
+					  }
+					}
+				}else {
 				block();
 			}
 		}//end registerWithHC
@@ -169,7 +164,6 @@ public class SuperPeer extends Agent {
 				ACLMessage reply = msg.createReply();
 
 				if(msg.getPerformative()== ACLMessage.REQUEST){
-					//System.out.println("Got ping request");
 					String content = msg.getContent();
 					StringTokenizer st = new StringTokenizer(content);
 					ArrayList listContent = new ArrayList();
@@ -185,13 +179,7 @@ public class SuperPeer extends Agent {
 								HOPS--;
 								for(int i=0;i<Neighbours.size(); i++){
 									//is neighbor is not a sender do
-									//System.out.println("----------begining-------");
-
-									//System.out.println(Neighbours.get(i) +" equals to "+msg.getSender().getLocalName());
 									if(!Neighbours.get(i).equals(msg.getSender().getLocalName())){
-										//System.out.println(Neighbours.get(i) +" equals to "+msg.getSender().getLocalName());
-										
-										//System.out.println("-------end----------");
 
 										ACLMessage PingMSG = new ACLMessage(ACLMessage.REQUEST);
 										//HOPS needs to be added
@@ -239,7 +227,7 @@ public class SuperPeer extends Agent {
 								send(reply);
 							}
 						}
-				}
+					}
 				}else {
 				block();
 			}
@@ -266,7 +254,6 @@ public class SuperPeer extends Agent {
 			ArrayList<String> ListOfHC = new ArrayList<String>();			
 			ACLMessage  msg = msg2;
 			if(msg != null){
-				//ACLMessage reply = msg.createReply();
 				if(msg.getPerformative()== ACLMessage.INFORM){
 					String content = msg.getContent();
 					//splits received message to tokens to get message and ID strings
@@ -292,9 +279,9 @@ public class SuperPeer extends Agent {
 									 equals = false;
 								 }
 							}
+						}
 					}
-					}
-				}
+				  }
 				}
 			else {
 				block();

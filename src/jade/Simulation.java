@@ -21,15 +21,20 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.ControllerException;
 
+/**
+ * This agent is for simulation. It reads the txt file to get the names and 
+ * details of peers and hostcaches. then it creates new container and launches 
+ * those Peers and hostcaches.
+ * 
+ * @author Edgaras Valincius
+ * @references Tiziana Trucco - CSELT S.p.A.(used the ping message example)  
+ */
 public class Simulation extends Agent {
 	private Logger myLogger = Logger.getMyLogger(getClass().getName());
 	
 	
 	// get a JADE runtime
-	
-	/**
-	 * 
-	 */
+
 	
 	private static final long serialVersionUID = -3200493830320510548L;{
 	try {

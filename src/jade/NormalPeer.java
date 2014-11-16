@@ -39,13 +39,12 @@ import jade.domain.FIPAException;
 import jade.util.Logger;
 
 /**
- * This agent implements a simple Ping Agent that registers itself with the DF and 
- * then waits for ACLMessages.
- * If  a REQUEST message is received containing the string "ping" within the content 
- * then it replies with an INFORM message whose content will be the string "pong". 
+ * This agent implements a simple Agent that registers itself with the DF and 
+ * then registers itself to HC and sends "ping" REQUEST
+ * messages to SupperPeers to get some one SuperPeer to connect to.
  * 
- * @author Tiziana Trucco - CSELT S.p.A.
- * @version  $Date: 2010-04-08 13:08:55 +0200 (gio, 08 apr 2010) $ $Revision: 6297 $  
+ * @author Edgaras Valincius
+ * @references Tiziana Trucco - CSELT S.p.A.(used the ping message example)  
  */
 public class NormalPeer extends Agent {
 
