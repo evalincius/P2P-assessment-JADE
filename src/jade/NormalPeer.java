@@ -126,7 +126,7 @@ public class NormalPeer extends Agent {
 									for(int i=2; i<listContent.size(); i++){
 										SuperPeerList.add((String) listContent.get(i));
 									}
-									System.out.println("SPLISTAS NormalPEER!!! "+ SuperPeerList);
+									//System.out.println("SPLISTAS NormalPEER!!! "+ SuperPeerList);
 									registered = true;
 									if(SuperPeerList.size()==0){
 										registered = false;

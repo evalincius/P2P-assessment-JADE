@@ -23,9 +23,12 @@ Boston, MA  02111-1307, USA.
 
 package jade;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.TimerTask;
+import java.util.Timer;
 
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
@@ -81,10 +84,8 @@ public class SuperPeer extends Agent {
 				connectWithServent(msg);
 				connectWithOtherSuperPeers();
 				getSuperPeersResponce(msg);
-			}
-			
-			
-		}
+			}	
+		}//end of action
 		
 		public void registerWithHc(){
 			// gets argumets for test purposes
@@ -105,12 +106,26 @@ public class SuperPeer extends Agent {
 		    int rand = r.nextInt(ListOfHC.size());
 		    String randomHC = ListOfHC.get(rand);
 		    //creates register message and sends it to randomly selected host cache 
-			ACLMessage RegMsg = new ACLMessage(ACLMessage.REQUEST);
+			final ACLMessage RegMsg = new ACLMessage(ACLMessage.REQUEST);
 			//attaches BW to the message 
 			RegMsg.setContent("register"+ " " + BW);
 			AID recei = new AID(randomHC, AID.ISLOCALNAME);
 			RegMsg.addReceiver(recei);
 			if(!registered){
+				//registers again to get different super peers if don't have neighbors
+				Timer timer = new Timer();
+				timer.schedule(new TimerTask() {
+				   public void run() {
+					   if(Neighbours.size()==0){
+						   System.out.println("repeat");
+						   registered = false;
+						   MSGsent=false;
+							myAgent.send(RegMsg);
+
+					   	}
+					   }
+
+				}, 15000);
 				myAgent.send(RegMsg);
 				registered = true;
 			}
@@ -133,8 +148,8 @@ public class SuperPeer extends Agent {
 						for(int i=2; i<listContent.size(); i++){
 							SuperPeerList.add((String) listContent.get(i));
 						}
-						System.out.println("Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
-						System.out.println("SPLISTAS SuperPeer!!! "+ SuperPeerList);
+						//System.out.println("Agent "+getLocalName()+" - Received COMFIRMATION from "+msg.getSender().getLocalName());
+						//System.out.println("SPLISTAS SuperPeer!!! "+ SuperPeerList);
 						registered = true;
 
 						if(SuperPeerList.size()==0){
@@ -203,8 +218,17 @@ public class SuperPeer extends Agent {
 									reply.setPerformative(ACLMessage.INFORM);
 									reply.setContent("pong"+" "+ getLocalName());
 									send(reply);
-									Neighbours.add(lastPeer);
-									System.out.println(getLocalName()+" NEIGHBOUR WITH "+Neighbours + " after forwarding");
+									boolean equals = false;
+									 for(int a=0; a<Neighbours.size(); a++){
+										 if(Neighbours.get(a).equals(lastPeer)){
+											 equals = true;
+										 }
+									 }
+									 if(!equals){
+										 Neighbours.add(lastPeer);
+										 System.out.println(getLocalName()+" NEIGHBOUR WITH "+Neighbours + " after forwarding");
+										 equals = false;
+									 }
 								}
 							}
 						}else{
@@ -256,12 +280,22 @@ public class SuperPeer extends Agent {
 							String PeerAnswered = (String) listContent.get(1);
 							myLogger.log(Logger.INFO, "Agent "+getLocalName()+" - Received PONG from "+msg.getSender().getLocalName());
 							if(Neighbours.size()<2){
-								Neighbours.add(PeerAnswered);
-								System.out.println(getLocalName()+" NEIGHBOUR WITH "+Neighbours);
+								boolean equals = false;
+								 for(int a=0; a<Neighbours.size(); a++){
+									 if(Neighbours.get(a).equals(PeerAnswered)){
+										 equals = true;
+									 }
+								 }
+								 if(!equals){
+									 Neighbours.add(PeerAnswered);
+									 System.out.println(getLocalName()+" NEIGHBOUR WITH "+Neighbours + " after forwarding");
+									 equals = false;
+								 }
 							}
 					}
 					}
-				}}
+				}
+				}
 			else {
 				block();
 			}
